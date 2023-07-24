@@ -1,0 +1,36 @@
+{
+  "name": "opencv-js-face-detection",
+  "version": "1.0.0",
+  "description": "Realtime face detection using opencv-js",
+  "keywords": [],
+  "main": "src/index.jsx",
+  "dependencies": {
+    "@techstark/opencv-js": "4.5.5-release.1",
+    "crypto": "^1.0.1",
+    "react": "18.0.0",
+    "react-dom": "18.0.0",
+    "react-scripts": "5.0.0",
+    "react-webcam": "7.0.0"
+  },
+  "devDependencies": {
+    "@babel/runtime": "7.13.8",
+    "typescript": "4.1.3"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "browser": {
+    "crypto": false,
+    "fs": false,
+    "path": false
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}
