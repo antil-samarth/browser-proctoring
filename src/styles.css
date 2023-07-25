@@ -5,8 +5,6 @@
 
 .webcam {
   border: 1px solid gray;
-  max-width: 500px;
-  max-height: 1000px;
   margin: 2px;
 }
 
@@ -16,7 +14,5 @@
 
 .outputImage {
   border: 1px solid blue;
-  max-width: 500px;
-  max-height: 1000px;
   margin: 2px;
 }

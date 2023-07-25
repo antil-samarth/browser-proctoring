@@ -1,10 +1,13 @@
-import cv, { min } from "@techstark/opencv-js";
+import cv from "@techstark/opencv-js";
 import { loadDataFile } from "./cvDataFile";
 
-const msize = new cv.Size(0, 0);
 let faceCascade;
-let faceDetectedTime = 0;
-let totalTime = 0;
+/* let faceDetectedTime = 0;
+let totalTime = 0; */
+const minSize = new cv.Size(120, 120);
+const maxSize = new cv.Size(300, 300);
+/* let pct1 = 0; */
+let faceCheck = false;
 
 export async function loadHaarFaceModels() {
   console.log("=======start downloading Haar-cascade models=======");
@@ -34,27 +37,28 @@ export async function loadHaarFaceModels() {
 export function detectHaarFace(img, count) {
   // const newImg = img.clone();
   const newImg = img;
+  faceCheck = false;
 
   const gray = new cv.Mat();
   cv.cvtColor(newImg, gray, cv.COLOR_RGBA2GRAY, 0);
 
   const faces = new cv.RectVector();
-  const minSize = new cv.Size(120, 120);
   // detect faces
-  faceCascade.detectMultiScale(gray, faces, 1.1, 3, 0, minSize);
-  for (let i = 0; i < faces.size(); ++i) {
-    const point1 = new cv.Point(faces.get(i).x, faces.get(i).y);
-    const point2 = new cv.Point(
-      faces.get(i).x + faces.get(i).width,
-      faces.get(i).y + faces.get(i).height
-    );
-    cv.rectangle(newImg, point1, point2, [255, 0, 0, 255]);
-    faceDetectedTime += 1 / 24;
+  faceCascade.detectMultiScale(gray, faces, 1.05, 4, 0, minSize, maxSize);
+  if (faces.size() > 0) {
+    
+    for (let i = 0; i < faces.size(); ++i) {
+      const point1 = new cv.Point(faces.get(i).x, faces.get(i).y);
+      const point2 = new cv.Point(
+        faces.get(i).x + faces.get(i).width,
+        faces.get(i).y + faces.get(i).height
+      );
+      cv.rectangle(newImg, point1, point2, [255, 0, 0, 255]);
+      
+    }faceCheck = true;
+  }else{
+    cv.putText(newImg, "Please look at the camera", { x: 50, y: 50 }, cv.FONT_HERSHEY_SIMPLEX, 1.0, [0, 0, 255, 255], 2);
   }
-  totalTime += 1 / 24; // Add 1/24 seconds for each frame processed
-  gray.delete();
-  faces.delete();
-
-  return newImg, (faceDetectedTime / totalTime) * 100;
+  return (newImg, faceCheck) ;
 }
 

@@ -9,7 +9,7 @@ export default function App() {
   const [isActive, setIsActive] = React.useState(false);
   const canvas = document.querySelector("canvas");
   let pct = 0;
-  let count;
+  let count =0, faceCheck, counttotal = 0;
 
   React.useEffect(() => {
     loadHaarFaceModels().then(() => {
@@ -38,7 +38,11 @@ export default function App() {
         imgRef.current.onload = () => {
           try {
             const img = cv.imread(imgRef.current);
-            img, count = detectHaarFace(img);
+            faceCheck = detectHaarFace(img);
+            if (faceCheck === true){
+              count = count + 1;
+            }
+            counttotal = counttotal + 1;
             cv.imshow(faceImgRef.current, img);
 
             img.delete();
@@ -65,7 +69,7 @@ export default function App() {
     return () => {
       clearInterval(handle);
       clearTimeout(detectionStopTimeout);
-      pct = count
+      pct = (count/counttotal)*100;;
       console.log(pct)
     };
 
