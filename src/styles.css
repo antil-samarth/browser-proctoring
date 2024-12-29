@@ -1,18 +1,115 @@
-.App {
+body {
   font-family: sans-serif;
+  margin: 0;
+  background-color: #f4f4f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.app-container {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
+  width: 90%;
+  max-width: 700px;
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 15px;
+}
+
+p {
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.webcam-container {
+  position: relative;
+  margin-bottom: 20px;
 }
 
 .webcam {
-  border: 1px solid gray;
-  margin: 2px;
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
-.inputImage {
-  display: none;
+.output-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
 }
 
-.outputImage {
-  border: 1px solid blue;
-  margin: 2px;
+.input-image {
+  display: none; /* Keep it hidden */
+}
+
+.controls {
+  margin-bottom: 20px;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+  margin: 0 10px;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.detection-info {
+  background-color: #e8f0fe;
+  padding: 15px;
+  border-radius: 5px;
+  text-align: left;
+  margin-bottom: 15px;
+  border: 1px solid #b8daff;
+}
+
+.detection-info p {
+  margin-bottom: 8px;
+  color: #383d41;
+}
+
+.detection-info p:last-child {
+  margin-bottom: 0;
+}
+
+.detection-info .warning {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .app-container {
+    padding: 20px;
+  }
+
+  button {
+    padding: 8px 15px;
+    font-size: 14px;
+    margin: 5px;
+  }
 }
