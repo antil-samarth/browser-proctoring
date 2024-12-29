@@ -1,101 +1,168 @@
-import React from "react";
-import Webcam from "react-webcam";
+import React, { useState, useRef, useEffect } from "react";
 import cv from "@techstark/opencv-js";
 import { loadHaarFaceModels, detectHaarFace } from "./haarFaceDetection";
 import "./styles.css";
+import WebcamView from "./components/WebcamView";
+
+const DetectionControls = ({ modelLoaded, isActive, onStart, onStop, detectionPercentage, isTestRunning }) => (
+  <div className="controls">
+    {!modelLoaded && <div>Loading ...</div>}
+    {modelLoaded && !isActive && (
+      <button onClick={onStart} disabled={isTestRunning}>Start Test</button>
+    )}
+    {isActive && (
+      <button onClick={onStop}>Stop Test</button>
+    )}
+    {isTestRunning && (
+      <div className="test-progress">
+        Test in progress.
+      </div>
+    )}
+  </div>
+);
+
+const DetectionInfo = ({ isFaceCurrentlyDetected, areMultipleFacesDetected, detectionPercentage }) => (
+  <div className="detection-info">
+    <p>Face Detected: {isFaceCurrentlyDetected ? "Yes" : "No"}</p>
+    {areMultipleFacesDetected && (
+      <p className="warning">Multiple faces detected!</p>
+    )}
+    <p>Detection Percentage: {detectionPercentage}%</p>
+  </div>
+);
 
 export default function App() {
-  const [modelLoaded, setModelLoaded] = React.useState(false);
-  const [isActive, setIsActive] = React.useState(false);
-  const canvas = document.querySelector("canvas");
-  let pct = 0;
-  let count =0, faceCheck, counttotal = 0;
+  const [modelLoaded, setModelLoaded] = useState(false);
+  const [isActive, setIsActive] = useState(false);
+  const [isFaceCurrentlyDetected, setIsFaceCurrentlyDetected] = useState(false);
+  const [areMultipleFacesDetected, setAreMultipleFacesDetected] = useState(false);
+  const [faceDetectedCount, setFaceDetectedCount] = useState(0);
+  const [totalFramesProcessed, setTotalFramesProcessed] = useState(0);
+  const [detectionPercentage, setDetectionPercentage] = useState(0);
+  const [isTestRunning, setIsTestRunning] = useState(false);
+  const canvasRef = useRef(null);
+  const webcamRef = useRef(null);
+  const imgRef = useRef(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     loadHaarFaceModels().then(() => {
+      console.log("Haar-cascade model loaded");
       setModelLoaded(true);
     });
   }, []);
 
-  const webcamRef = React.useRef(null);
-  const imgRef = React.useRef(null);
-  const faceImgRef = React.useRef(null);
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!modelLoaded) return;
 
+    const canvas = canvasRef.current;
+
     const detectFace = async () => {
-      if (!isActive){
-        canvas.style.display = "none";
-        return;
-      }
+      if (!isActive || !webcamRef.current || !canvas || !imgRef.current) return;
 
       const imageSrc = webcamRef.current.getScreenshot();
       if (!imageSrc) return;
 
-      return new Promise((resolve) => {
-        imgRef.current.src = imageSrc;
-        imgRef.current.onload = () => {
-          try {
-            const img = cv.imread(imgRef.current);
-            faceCheck = detectHaarFace(img);
-            if (faceCheck === true){
-              count = count + 1;
-            }
-            counttotal = counttotal + 1;
-            cv.imshow(faceImgRef.current, img);
+      imgRef.current.src = imageSrc;
 
-            img.delete();
-            resolve();
+      return new Promise((resolve) => {
+        imgRef.current.onload = async () => {
+          let img;
+          try {
+            img = cv.imread(imgRef.current);
+            const detectionResult = detectHaarFace(img);
+
+            setIsFaceCurrentlyDetected(detectionResult.faceDetected);
+            setAreMultipleFacesDetected(detectionResult.multipleFacesDetected);
+
+            if (detectionResult.faceDetected) {
+              setFaceDetectedCount((prevCount) => prevCount + 1);
+            }
+            setTotalFramesProcessed((prevCount) => prevCount + 1);
+            cv.imshow(canvas, detectionResult.image);
           } catch (error) {
-            console.log(error);
+            console.error("Error during face detection:", error);
+          } finally {
+            if (img) {
+              img.delete();
+            }
             resolve();
           }
         };
       });
     };
 
-    let handle;
-    const nextTick = () => {
-      handle = setInterval(async () => {
+    let intervalId;
+    const startDetectionLoop = () => {
+      intervalId = setInterval(async () => {
         await detectFace();
-      }, 1000/24);
-    };
-    nextTick();
-    const detectionStopTimeout = setTimeout(() => {
-      setIsActive(false);
-    }, 18000); // 180 seconds (3 minutes)
-
-    return () => {
-      clearInterval(handle);
-      clearTimeout(detectionStopTimeout);
-      pct = (count/counttotal)*100;;
-      console.log(pct)
+      }, 1000 / 24);
     };
 
-    
-  }, [isActive]);
+    if (isActive && canvasRef.current) {
+      canvasRef.current.style.display = "block";
+      startDetectionLoop();
+    } else if (canvasRef.current) {
+      canvasRef.current.style.display = "none";
+      clearInterval(intervalId);
+    }
+
+    return () => clearInterval(intervalId);
+  }, [isActive, modelLoaded]);
+
+  useEffect(() => {
+    if (totalFramesProcessed > 0) {
+      setDetectionPercentage(
+        Math.round((faceDetectedCount / totalFramesProcessed) * 100)
+      );
+    } else {
+      setDetectionPercentage(0);
+    }
+  }, [faceDetectedCount, totalFramesProcessed]);
 
   const handleStartFaceDetection = () => {
+    setFaceDetectedCount(0);
+    setTotalFramesProcessed(0);
     setIsActive(true);
-    canvas.style.display = "block";
+    setAreMultipleFacesDetected(false);
+    setIsTestRunning(true); // Test starts
+    if (canvasRef.current) {
+      canvasRef.current.style.display = "block";
+    }
+
+    // Stop test after 30 seconds
+    setTimeout(() => {
+      handleStopFaceDetection();
+    }, 30000);
+  };
+
+  const handleStopFaceDetection = () => {
+    setIsActive(false);
+    setIsTestRunning(false); // Test ends
+    if (canvasRef.current) {
+      canvasRef.current.style.display = "none";
+    }
   };
 
   return (
-    <div className="App">
-      <Webcam
-        ref={webcamRef}
-        className="webcam"
-        mirrored
-        screenshotFormat="image/jpeg"
-        audio={false}
+    <div className="app-container">
+      <h1>In-Browser Proctoring</h1>
+      <p>Click "Start Test" and ensure your face is visible in the camera.</p>
+
+      <WebcamView webcamRef={webcamRef} canvasRef={canvasRef} imgRef={imgRef} mirrored screenshotFormat="image/jpeg" />
+      <DetectionControls
+        modelLoaded={modelLoaded}
+        isActive={isActive}
+        onStart={handleStartFaceDetection}
+        onStop={handleStopFaceDetection}
+        detectionPercentage={detectionPercentage}
+        isTestRunning={isTestRunning}
       />
-      <img className="inputImage" alt="input" ref={imgRef} />
-      <canvas className="outputImage" ref={faceImgRef} />
-      {!modelLoaded && <div>Loading Haar-cascade face model...</div>}
-      {!isActive && modelLoaded && (
-        <button onClick={handleStartFaceDetection}>Start Face Detection</button>
-      )}
+
+      <DetectionInfo
+        isFaceCurrentlyDetected={isFaceCurrentlyDetected}
+        areMultipleFacesDetected={areMultipleFacesDetected}
+        detectionPercentage={detectionPercentage}
+      />
     </div>
   );
 }

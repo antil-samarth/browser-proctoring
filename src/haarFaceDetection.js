@@ -2,63 +2,60 @@ import cv from "@techstark/opencv-js";
 import { loadDataFile } from "./cvDataFile";
 
 let faceCascade;
-/* let faceDetectedTime = 0;
-let totalTime = 0; */
-const minSize = new cv.Size(120, 120);
-const maxSize = new cv.Size(300, 300);
-/* let pct1 = 0; */
-let faceCheck = false;
+const minSize = new cv.Size(80, 80);
+const maxSize = new cv.Size(400, 400);
+const COLOR_GREEN = new cv.Scalar(0, 255, 0, 255);
+const THICKNESS = 2;
 
 export async function loadHaarFaceModels() {
   console.log("=======start downloading Haar-cascade models=======");
-  return loadDataFile(
-    "haarcascade_frontalface_default.xml",
-    "models/haarcascade_frontalface_default.xml"
-  )
-    .then(
-      () =>
-        new Promise((resolve) => {
-          setTimeout(() => {
-            // load pre-trained classifiers
-            faceCascade = new cv.CascadeClassifier();
-            faceCascade.load("haarcascade_frontalface_default.xml");
-            resolve();
-          }, 2000);
-        })
-    )
-    .then(() => {
-      console.log("=======downloaded Haar-cascade models=======");
-    })
-    .catch((error) => {
-      console.error(error);
+  try {
+    await loadDataFile(
+      "haarcascade_frontalface_default.xml",
+      "models/haarcascade_frontalface_default.xml"
+    );
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        faceCascade = new cv.CascadeClassifier();
+        faceCascade.load("haarcascade_frontalface_default.xml");
+        console.log("=======downloaded Haar-cascade models=======");
+        resolve();
+      }, 1500);
     });
-}
-
-export function detectHaarFace(img, count) {
-  // const newImg = img.clone();
-  const newImg = img;
-  faceCheck = false;
-
-  const gray = new cv.Mat();
-  cv.cvtColor(newImg, gray, cv.COLOR_RGBA2GRAY, 0);
-
-  const faces = new cv.RectVector();
-  // detect faces
-  faceCascade.detectMultiScale(gray, faces, 1.05, 4, 0, minSize, maxSize);
-  if (faces.size() > 0) {
-    
-    for (let i = 0; i < faces.size(); ++i) {
-      const point1 = new cv.Point(faces.get(i).x, faces.get(i).y);
-      const point2 = new cv.Point(
-        faces.get(i).x + faces.get(i).width,
-        faces.get(i).y + faces.get(i).height
-      );
-      cv.rectangle(newImg, point1, point2, [255, 0, 0, 255]);
-      
-    }faceCheck = true;
-  }else{
-    cv.putText(newImg, "Please look at the camera", { x: 50, y: 50 }, cv.FONT_HERSHEY_SIMPLEX, 1.0, [0, 0, 255, 255], 2);
+  } catch (error) {
+    console.error("Error loading Haar-cascade model:", error);
+    throw error;
   }
-  return (newImg, faceCheck) ;
 }
 
+export function detectHaarFace(img) {
+  let faceDetected = false;
+  let multipleFacesDetected = false;
+  const gray = new cv.Mat();
+
+  try {
+    cv.cvtColor(img, gray, cv.COLOR_RGBA2GRAY, 0);
+
+    const faces = new cv.RectVector();
+    faceCascade.detectMultiScale(gray, faces, 1.1, 3, 0, minSize, maxSize);
+
+    if (faces.size() > 0) {
+      faceDetected = true;
+      if (faces.size() > 1) {
+        multipleFacesDetected = true;
+      }
+      for (let i = 0; i < faces.size(); ++i) {
+        const faceRect = faces.get(i);
+        const point1 = new cv.Point(faceRect.x, faceRect.y);
+        const point2 = new cv.Point(faceRect.x + faceRect.width, faceRect.y + faceRect.height);
+        cv.rectangle(img, point1, point2, COLOR_GREEN, THICKNESS);
+      }
+    }
+    return { image: img, faceDetected, multipleFacesDetected };
+  } catch (error) {
+    console.error("Error in detectHaarFace:", error);
+    return { image: img, faceDetected: false, multipleFacesDetected: false };
+  } finally {
+    gray.delete();
+  }
+}
