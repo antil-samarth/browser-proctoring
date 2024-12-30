@@ -35,7 +35,8 @@ This project implements real-time face detection using OpenCV.js for in-browser 
 4. The detection results will be displayed on the screen.
 
 ## Project Structure
-├── public/ 
+
+`├── public/ 
 │ ├── assets/ 
 │ ├── index.html 
 │ └── models/ 
@@ -50,23 +51,23 @@ This project implements real-time face detection using OpenCV.js for in-browser 
 │ └── styles.css 
 ├── .gitignore 
 ├── package.json 
-└── README.md
+└── README.md`
 
 
 ## Components
 
-### [App.jsx]
+### App.jsx
 
 The main component that manages the state and handles the face detection logic.
 
-### [WebcamView.jsx]
+### WebcamView.jsx
 
 A component that displays the webcam feed and captures screenshots.
 
-### [haarFaceDetection.js]
+### haarFaceDetection.js
 
 Contains functions to load Haar-cascade models and detect faces in images.
 
-### `cvDataFile.js`
+### cvDataFile.js
 
 Handles loading of data files required by OpenCV.js.
