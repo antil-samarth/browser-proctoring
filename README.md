@@ -42,7 +42,8 @@ This project implements real-time face detection using OpenCV.js for in-browser 
 │ ├── index.html 
 │ └── models/ 
 │ └── haarcascade_frontalface_default.xml 
-├── src/ │ ├── App.jsx 
+├── src/
+│ ├── App.jsx 
 │ ├── components/ 
 │ │ └── WebcamView.jsx 
 │ ├── cvDataFile.js 
