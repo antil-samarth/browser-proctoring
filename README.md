@@ -13,7 +13,7 @@ This project implements real-time face detection using OpenCV.js for in-browser 
 
 1. Clone the repository:
     ```sh
-    git clone [https://github.com/yourusername/in-browser-proctoring.git](https://github.com/antil-samarth/browser-proctoring/)
+    git clone https://github.com/antil-samarth/browser-proctoring/
     cd browser-proctoring
     ```
 
