@@ -16,6 +16,8 @@ body {
   text-align: center;
   width: 90%;
   max-width: 700px;
+  position: relative;
+  margin: 1em;
 }
 
 h1 {
@@ -50,7 +52,7 @@ p {
 }
 
 .input-image {
-  display: none; /* Keep it hidden */
+  display: none;
 }
 
 .controls {
@@ -101,15 +103,37 @@ button:disabled {
   font-weight: bold;
 }
 
+.timer {
+  position: fixed; /* Change to fixed positioning */
+  top: 10px;
+  right: 10px; /* Keep right alignment */
+  font-size: 18px;
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f5f5f5;
+  z-index: 100; /* Ensure timer stays on top of other elements */
+  display: flex;
+  align-items: center;
+}
+
 /* Responsive adjustments */
 @media (max-width: 600px) {
   .app-container {
     padding: 20px;
   }
 
+  h1 {
+    margin-top: 1em;
+  }
+
   button {
     padding: 8px 15px;
     font-size: 14px;
     margin: 5px;
+  }
+
+  .timer {
+    position: absolute; /* Make the timer sticky on larger screens */
   }
 }

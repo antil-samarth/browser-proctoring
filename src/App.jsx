@@ -4,7 +4,10 @@ import { loadHaarFaceModels, detectHaarFace } from "./haarFaceDetection";
 import "./styles.css";
 import WebcamView from "./components/WebcamView";
 
-const DetectionControls = ({ modelLoaded, isActive, onStart, onStop, detectionPercentage, isTestRunning }) => (
+const TIMER_DURATION = 30;
+const FRAMES_PER_SECOND = 5;
+
+const DetectionControls = ({ modelLoaded, isActive, onStart, onStop, isTestRunning }) => (
   <div className="controls">
     {!modelLoaded && <div>Loading ...</div>}
     {modelLoaded && !isActive && (
@@ -31,6 +34,13 @@ const DetectionInfo = ({ isFaceCurrentlyDetected, areMultipleFacesDetected, dete
   </div>
 );
 
+const Timer = ({ remainingTime }) => (
+  <div className="timer">
+    <img src="./assets/record.png" alt="record" width={20} height={20} />
+    Time Remaining: {remainingTime}s
+  </div>
+);
+
 export default function App() {
   const [modelLoaded, setModelLoaded] = useState(false);
   const [isActive, setIsActive] = useState(false);
@@ -40,6 +50,7 @@ export default function App() {
   const [totalFramesProcessed, setTotalFramesProcessed] = useState(0);
   const [detectionPercentage, setDetectionPercentage] = useState(0);
   const [isTestRunning, setIsTestRunning] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(0);
   const canvasRef = useRef(null);
   const webcamRef = useRef(null);
   const imgRef = useRef(null);
@@ -95,7 +106,7 @@ export default function App() {
     const startDetectionLoop = () => {
       intervalId = setInterval(async () => {
         await detectFace();
-      }, 1000 / 24);
+      }, 1000 / FRAMES_PER_SECOND);
     };
 
     if (isActive && canvasRef.current) {
@@ -125,19 +136,26 @@ export default function App() {
     setIsActive(true);
     setAreMultipleFacesDetected(false);
     setIsTestRunning(true); // Test starts
+    setRemainingTime(TIMER_DURATION);
     if (canvasRef.current) {
       canvasRef.current.style.display = "block";
     }
 
-    // Stop test after 30 seconds
-    setTimeout(() => {
-      handleStopFaceDetection();
-    }, 30000);
+    const timerInterval = setInterval(() => {
+      setRemainingTime((prevTime) => {
+        if (prevTime <= 1) {
+          clearInterval(timerInterval);
+          handleStopFaceDetection();
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
   };
 
   const handleStopFaceDetection = () => {
     setIsActive(false);
-    setIsTestRunning(false); // Test ends
+    setIsTestRunning(false);
     if (canvasRef.current) {
       canvasRef.current.style.display = "none";
     }
@@ -148,13 +166,14 @@ export default function App() {
       <h1>In-Browser Proctoring</h1>
       <p>Click "Start Test" and ensure your face is visible in the camera.</p>
 
+      {isTestRunning && <Timer remainingTime={remainingTime} />}
+
       <WebcamView webcamRef={webcamRef} canvasRef={canvasRef} imgRef={imgRef} mirrored screenshotFormat="image/jpeg" />
       <DetectionControls
         modelLoaded={modelLoaded}
         isActive={isActive}
         onStart={handleStartFaceDetection}
         onStop={handleStopFaceDetection}
-        detectionPercentage={detectionPercentage}
         isTestRunning={isTestRunning}
       />
 
