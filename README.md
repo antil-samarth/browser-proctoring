@@ -36,7 +36,8 @@ This project implements real-time face detection using OpenCV.js for in-browser 
 
 ## Project Structure
 
-`├── public/ 
+```sh
+├── public/ 
 │ ├── assets/ 
 │ ├── index.html 
 │ └── models/ 
@@ -51,7 +52,8 @@ This project implements real-time face detection using OpenCV.js for in-browser 
 │ └── styles.css 
 ├── .gitignore 
 ├── package.json 
-└── README.md`
+└── README.md
+```
 
 
 ## Components
