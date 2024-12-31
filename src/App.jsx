@@ -3,6 +3,8 @@ import cv from "@techstark/opencv-js";
 import { loadHaarFaceModels, detectHaarFace } from "./haarFaceDetection";
 import "./styles.css";
 import WebcamView from "./components/WebcamView";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 
 const TIMER_DURATION = 30;
 const FRAMES_PER_SECOND = 5;
@@ -162,26 +164,38 @@ export default function App() {
   };
 
   return (
-    <div className="app-container">
-      <h1>In-Browser Proctoring</h1>
-      <p>Click "Start Test" and ensure your face is visible in the camera.</p>
+    <div className="app-wrapper">
+      <Header />
 
-      {isTestRunning && <Timer remainingTime={remainingTime} />}
+      <main className="app-container">
+        <h1>In-Browser Proctoring</h1>
+        <p>This is a demonstration of an AI-powered proctoring application built using React and OpenCV.js.
+          It detects faces in real-time using the webcam feed and provides feedback on whether a face is
+          currently detected, if multiple faces are present, and the overall detection percentage.
+        </p>
+        <p>
+          Try it out! Click "Start Test" to see the proctoring in action.
+        </p>
 
-      <WebcamView webcamRef={webcamRef} canvasRef={canvasRef} imgRef={imgRef} mirrored screenshotFormat="image/jpeg" />
-      <DetectionControls
-        modelLoaded={modelLoaded}
-        isActive={isActive}
-        onStart={handleStartFaceDetection}
-        onStop={handleStopFaceDetection}
-        isTestRunning={isTestRunning}
-      />
+        {isTestRunning && <Timer remainingTime={remainingTime} />}
 
-      <DetectionInfo
-        isFaceCurrentlyDetected={isFaceCurrentlyDetected}
-        areMultipleFacesDetected={areMultipleFacesDetected}
-        detectionPercentage={detectionPercentage}
-      />
+        <WebcamView webcamRef={webcamRef} canvasRef={canvasRef} imgRef={imgRef} mirrored screenshotFormat="image/jpeg" />
+        <DetectionControls
+          modelLoaded={modelLoaded}
+          isActive={isActive}
+          onStart={handleStartFaceDetection}
+          onStop={handleStopFaceDetection}
+          isTestRunning={isTestRunning}
+        />
+
+        <DetectionInfo
+          isFaceCurrentlyDetected={isFaceCurrentlyDetected}
+          areMultipleFacesDetected={areMultipleFacesDetected}
+          detectionPercentage={detectionPercentage}
+        />
+      </main>
+
+      <Footer />
     </div>
   );
 }
