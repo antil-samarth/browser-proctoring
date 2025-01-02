@@ -5,9 +5,10 @@ import "./styles.css";
 import WebcamView from "./components/WebcamView";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import Settings from "./components/Settings";
 
-const TIMER_DURATION = 30;
-const FRAMES_PER_SECOND = 5;
+const DEFAULT_TIMER_DURATION = 30;
+const DEFAULT_PERFORMANCE = "medium";
 
 const DetectionControls = ({ modelLoaded, isActive, onStart, onStop, isTestRunning }) => (
   <div className="controls">
@@ -53,6 +54,9 @@ export default function App() {
   const [detectionPercentage, setDetectionPercentage] = useState(0);
   const [isTestRunning, setIsTestRunning] = useState(false);
   const [remainingTime, setRemainingTime] = useState(0);
+  const [showSettings, setShowSettings] = useState(false);
+  const [timerDuration, setTimerDuration] = useState(DEFAULT_TIMER_DURATION);
+  const [performance, setPerformance] = useState(DEFAULT_PERFORMANCE);
   const canvasRef = useRef(null);
   const webcamRef = useRef(null);
   const imgRef = useRef(null);
@@ -64,16 +68,65 @@ export default function App() {
     });
   }, []);
 
+  const handleStartFaceDetection = () => {
+    setFaceDetectedCount(0);
+    setTotalFramesProcessed(0);
+    setIsActive(true);
+    setAreMultipleFacesDetected(false);
+    setIsTestRunning(true);
+    setRemainingTime(timerDuration);
+    if (canvasRef.current) {
+      canvasRef.current.style.display = "block";
+    }
+
+    const timerInterval = setInterval(() => {
+      setRemainingTime((prevTime) => {
+        if (prevTime <= 1) {
+          clearInterval(timerInterval);
+          handleStopFaceDetection();
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+  };
+
+  const handleSaveSettings = ({ duration, performance }) => {
+    setTimerDuration(duration);
+    setPerformance(performance);
+    setShowSettings(false);
+  };
+
+  
+
   useEffect(() => {
     if (!modelLoaded) return;
 
     const canvas = canvasRef.current;
+    let isDetecting = false;
+
+    const getFramesPerSecond = () => {
+      switch (performance) {
+        case "low":
+          return 5;
+        case "medium":
+          return 15;
+        case "high":
+          return 24;
+        default:
+          return 15;
+      }
+    };
 
     const detectFace = async () => {
-      if (!isActive || !webcamRef.current || !canvas || !imgRef.current) return;
-
+      if (!isActive || !webcamRef.current || !canvas || !imgRef.current || isDetecting) return;
+      
+      isDetecting = true;
       const imageSrc = webcamRef.current.getScreenshot();
-      if (!imageSrc) return;
+      if (!imageSrc) {
+        isDetecting = false;
+        return;
+      }
 
       imgRef.current.src = imageSrc;
 
@@ -101,14 +154,16 @@ export default function App() {
             resolve();
           }
         };
-      });
+      }).finally(() => {
+        isDetecting = false;
+    });
     };
 
     let intervalId;
     const startDetectionLoop = () => {
-      intervalId = setInterval(async () => {
-        await detectFace();
-      }, 1000 / FRAMES_PER_SECOND);
+      const fps = getFramesPerSecond();
+      console.log("Starting detection loop with fps:", fps);
+      intervalId = setInterval(detectFace, 1000 / fps);
     };
 
     if (isActive && canvasRef.current) {
@@ -120,7 +175,7 @@ export default function App() {
     }
 
     return () => clearInterval(intervalId);
-  }, [isActive, modelLoaded]);
+  }, [isActive, modelLoaded, performance]);
 
   useEffect(() => {
     if (totalFramesProcessed > 0) {
@@ -132,28 +187,7 @@ export default function App() {
     }
   }, [faceDetectedCount, totalFramesProcessed]);
 
-  const handleStartFaceDetection = () => {
-    setFaceDetectedCount(0);
-    setTotalFramesProcessed(0);
-    setIsActive(true);
-    setAreMultipleFacesDetected(false);
-    setIsTestRunning(true); // Test starts
-    setRemainingTime(TIMER_DURATION);
-    if (canvasRef.current) {
-      canvasRef.current.style.display = "block";
-    }
 
-    const timerInterval = setInterval(() => {
-      setRemainingTime((prevTime) => {
-        if (prevTime <= 1) {
-          clearInterval(timerInterval);
-          handleStopFaceDetection();
-          return 0;
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
-  };
 
   const handleStopFaceDetection = () => {
     setIsActive(false);
@@ -168,6 +202,19 @@ export default function App() {
       <Header />
 
       <main className="app-container">
+
+        <button onClick={() => setShowSettings(!showSettings)}>
+          {showSettings ? "Hide Settings" : "Show Settings"}
+        </button>
+
+        {showSettings && (
+          <Settings
+            onSave={handleSaveSettings}
+            initialDuration={timerDuration}
+            initialPerformance={performance}
+          />
+        )}
+
         <h1>In-Browser Proctoring</h1>
         <p>This is a demonstration of an AI-powered proctoring application built using React and OpenCV.js.
           It detects faces in real-time using the webcam feed and provides feedback on whether a face is

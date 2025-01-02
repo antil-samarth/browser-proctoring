@@ -61,6 +61,66 @@ body {
   margin: 1em auto;
 }
 
+.settings {
+  border: 1px solid #ccc;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 8px; /* Add rounded corners */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+  background-color: #f8f8f8; /* Light background color */
+}
+
+.settings h2 {
+  margin-top: 0;
+  margin-bottom: 15px; /* Add some space below the heading */
+  font-size: 1.2em;
+  color: #333; /* Darker text color */
+}
+
+.settings label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold; /* Make labels bold */
+}
+
+.settings input[type="number"],
+.settings select { /* Style select dropdown as well */
+  padding: 8px; /* Increase padding */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  font-size: 1em; /* Make input text slightly larger */
+}
+
+.settings input[type="number"] {
+  width: 60px; /* Adjust width as needed */
+}
+
+.settings .time-setting {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.settings .performance-setting {
+  margin-bottom: 15px; /* Add more space below performance setting */
+}
+
+.settings button {
+  background-color: #007bff; /* Blue background for button */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.2s; /* Smooth transition on hover */
+}
+
+.settings button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+}
+
 h1 {
   color: #333;
   margin-bottom: 15px;
