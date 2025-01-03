@@ -12,7 +12,7 @@ const Footer = () => {
         <a href="https://github.com/antil-samarth/browser-proctoring" target="_blank" rel="noopener noreferrer">Source Code</a>
         <a href="https://portfolio-rho-nine-83.vercel.app/" target="_blank" rel="noopener noreferrer">Portfolio</a>
       </div>
-      <p>© {new Date().getFullYear()} Your Name. All rights reserved.</p>
+      <p>© {new Date().getFullYear()} Samarth Pal Antil. All rights reserved.</p>
     </footer>
   );
 };

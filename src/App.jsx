@@ -6,6 +6,7 @@ import WebcamView from "./components/WebcamView";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Settings from "./components/Settings";
+import { FaCog } from "react-icons/fa";
 
 const DEFAULT_TIMER_DURATION = 30;
 const DEFAULT_PERFORMANCE = "medium";
@@ -55,11 +56,20 @@ export default function App() {
   const [isTestRunning, setIsTestRunning] = useState(false);
   const [remainingTime, setRemainingTime] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
+  const [isSettingsHovered, setIsSettingsHovered] = useState(false);
   const [timerDuration, setTimerDuration] = useState(DEFAULT_TIMER_DURATION);
   const [performance, setPerformance] = useState(DEFAULT_PERFORMANCE);
   const canvasRef = useRef(null);
   const webcamRef = useRef(null);
   const imgRef = useRef(null);
+
+  const handleSettingsMouseEnter = () => {
+    setIsSettingsHovered(true);
+  };
+
+  const handleSettingsMouseLeave = () => {
+    setIsSettingsHovered(false);
+  };
 
   useEffect(() => {
     loadHaarFaceModels().then(() => {
@@ -203,9 +213,17 @@ export default function App() {
 
       <main className="app-container">
 
-        <button onClick={() => setShowSettings(!showSettings)}>
-          {showSettings ? "Hide Settings" : "Show Settings"}
-        </button>
+      <div
+          className="settings-icon"
+          onClick={() => setShowSettings(!showSettings)}
+          onMouseEnter={handleSettingsMouseEnter}
+          onMouseLeave={handleSettingsMouseLeave}
+        >
+          <FaCog size={24} />
+          <span className={`settings-text ${isSettingsHovered ? 'visible' : ''}`}>
+            Settings
+          </span>
+        </div>
 
         {showSettings && (
           <Settings
@@ -215,7 +233,6 @@ export default function App() {
           />
         )}
 
-        <h1>In-Browser Proctoring</h1>
         <p>This is a demonstration of an AI-powered proctoring application built using React and OpenCV.js.
           It detects faces in real-time using the webcam feed and provides feedback on whether a face is
           currently detected, if multiple faces are present, and the overall detection percentage.
