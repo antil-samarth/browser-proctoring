@@ -1,20 +1,34 @@
-import React from 'react';
+import React from "react";
 
-const Review = ({ detectionPercentage, totalFramesProcessed, faceDetectedCount }) => {
-  const faceNotDetectedCount = totalFramesProcessed - faceDetectedCount;
+const Review = ({
+  detectionPercentage,
+  totalFramesProcessed,
+  faceDetectedCount,
+  secondsWithoutFace,
+  faceDetectionTimeline,
+}) => {
+  const faceDetectedSeconds = faceDetectionTimeline.filter(
+    (item) => item.detected
+  ).length;
+  const totalSeconds = faceDetectionTimeline.length;
 
   return (
     <div className="review">
       <h2>Proctoring Results</h2>
-      <p>Total Frames Processed: {totalFramesProcessed}</p>
-      <p>Face Detected Frames: {faceDetectedCount}</p>
-      <p>Face Not Detected Frames: {faceNotDetectedCount}</p>
-      <p>Detection Percentage: {detectionPercentage}%</p>
-      {/* <ul>
-        <li>Average time face was not detected</li>
-        <li>Number of times multiple faces were detected</li>
-        <li>Timestamps of any alerts/warnings</li>
-      </ul> */}
+      <p>Test Duration: {totalSeconds} seconds</p>
+      <p>Time Face Detected: {faceDetectedSeconds} seconds</p>
+      <p>Time Face Not Detected: {secondsWithoutFace} seconds</p>
+      <p>Detection Percentage: {detectionPercentage.toFixed(2)}%</p>
+      <h3>Timeline:</h3>
+      <div className="timeline">
+        {faceDetectionTimeline.map((item) => (
+          <div
+            key={item.second}
+            className={`timeline-item ${item.detected ? "detected" : "not-detected"
+              }`}
+          ></div>
+        ))}
+      </div>
     </div>
   );
 };

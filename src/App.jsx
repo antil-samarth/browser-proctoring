@@ -14,6 +14,7 @@ import "./styles.css";
 
 const DEFAULT_TIMER_DURATION = 30;
 const DEFAULT_PERFORMANCE = "medium";
+const DETECTION_THRESHOLD = 2 / 3;
 
 const DetectionControls = ({ modelLoaded, isActive, onStart, onStop, isTestRunning }) => (
 	<div className="controls">
@@ -63,6 +64,8 @@ export default function App() {
 	const [timerDuration, setTimerDuration] = useState(DEFAULT_TIMER_DURATION);
 	const [performance, setPerformance] = useState(DEFAULT_PERFORMANCE);
 	const [showReview, setShowReview] = useState(false);
+	const [secondsWithoutFace, setSecondsWithoutFace] = useState(0);
+	const [faceDetectionTimeline, setFaceDetectionTimeline] = useState([]);
 	const canvasRef = useRef(null);
 	const webcamRef = useRef(null);
 	const imgRef = useRef(null);
@@ -70,6 +73,10 @@ export default function App() {
 	const handleStartFaceDetection = () => {
 		setFaceDetectedCount(0);
 		setTotalFramesProcessed(0);
+		setDetectionPercentage(0);
+		setSecondsWithoutFace(0);
+		setFaceDetectionTimeline([]);
+		setShowReview(false);
 		setIsActive(true);
 		setAreMultipleFacesDetected(false);
 		setIsTestRunning(true);
@@ -103,9 +110,22 @@ export default function App() {
 		setTimerDuration(duration);
 		setPerformance(performance);
 		setShowSettings(false);
+
+		localStorage.setItem("timerDuration", duration);
+		localStorage.setItem("performance", performance);
 	};
 
 	useEffect(() => {
+		const storedTimerDuration = localStorage.getItem("timerDuration");
+		const storedPerformance = localStorage.getItem("performance");
+
+		if (storedTimerDuration) {
+			setTimerDuration(parseInt(storedTimerDuration, 10));
+		}
+		if (storedPerformance) {
+			setPerformance(storedPerformance);
+		}
+
 		loadHaarFaceModels().then(() => {
 			console.log("Haar-cascade model loaded");
 			setModelLoaded(true);
@@ -117,6 +137,10 @@ export default function App() {
 
 		const canvas = canvasRef.current;
 		let isDetecting = false;
+		let frameCount = 0;
+		let currentSecond = 0;
+		let faceDetectedInCurrentSecond = false;
+		let startTime = Date.now();
 
 		const getFramesPerSecond = () => {
 			switch (performance) {
@@ -155,6 +179,7 @@ export default function App() {
 
 						if (detectionResult.faceDetected) {
 							setFaceDetectedCount((prevCount) => prevCount + 1);
+							faceDetectedInCurrentSecond = true;
 						}
 						setTotalFramesProcessed((prevCount) => prevCount + 1);
 						cv.imshow(canvas, detectionResult.image);
@@ -175,8 +200,40 @@ export default function App() {
 		let intervalId;
 		const startDetectionLoop = () => {
 			const fps = getFramesPerSecond();
-			console.log("Starting detection loop with fps:", fps);
-			intervalId = setInterval(detectFace, 1000 / fps);
+			const interval = 1000 / fps;
+
+			intervalId = setInterval(() => {
+				const currentTime = Date.now();
+				const elapsed = currentTime - startTime;
+
+				if (elapsed >= 1000) {
+					const currentSecondStatus =
+						frameCount / (fps * (elapsed / 1000)) >= DETECTION_THRESHOLD;
+
+					setFaceDetectionTimeline((prevTimeline) => [
+						...prevTimeline,
+						{ 
+							second: currentSecond, 
+							detected: currentSecondStatus,
+						},
+					]);
+
+					if (!currentSecondStatus) {
+						setSecondsWithoutFace((prevSeconds) => prevSeconds + 1);
+					}
+
+					currentSecond++;
+					frameCount = 0;
+					startTime = currentTime;
+				}
+
+				if (faceDetectedInCurrentSecond) {
+					frameCount++;
+				}
+
+				detectFace();
+				faceDetectedInCurrentSecond = false;
+			}, interval);
 		};
 
 		if (isActive && canvasRef.current) {
@@ -238,6 +295,8 @@ export default function App() {
 						detectionPercentage={detectionPercentage}
 						totalFramesProcessed={totalFramesProcessed}
 						faceDetectedCount={faceDetectedCount}
+						secondsWithoutFace={secondsWithoutFace}
+						faceDetectionTimeline={faceDetectionTimeline}
 					/>
 				)}
 

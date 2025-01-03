@@ -327,6 +327,27 @@ button:disabled {
   margin: 5px 0;
 }
 
+.timeline {
+  display: flex;
+  width: 100%;
+  margin-top: 10px;
+  overflow-x: auto; /* Allow horizontal scrolling if needed */
+}
+
+.timeline-item {
+  flex-shrink: 0; /* Prevent items from shrinking */
+  width: 20px; /* Adjust width as needed */
+  height: 20px; /* Adjust height as needed */
+}
+
+.timeline-item.detected {
+  background-color: green; /* Or your preferred color */
+}
+
+.timeline-item.not-detected {
+  background-color: red; /* Or your preferred color */
+}
+
 @media (max-width: 600px) {
   .app-container {
     padding: 20px;
