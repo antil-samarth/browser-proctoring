@@ -309,6 +309,24 @@ button:disabled {
   margin: 14px;
 }
 
+.review {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f8f8f8;
+}
+
+.review h2 {
+  margin-top: 0;
+  font-size: 1.2em;
+  color: #333;
+}
+
+.review p {
+  margin: 5px 0;
+}
+
 @media (max-width: 600px) {
   .app-container {
     padding: 20px;
